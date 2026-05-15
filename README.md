@@ -63,12 +63,18 @@ No production dependencies - Pure Vanilla TypeScript
 
 With the stack described above in place, follow these steps to run Calcify locally:
 
+> **Node >= 22** is required. If you use [nvm](https://github.com/nvm-sh/nvm), run `nvm use` to switch to the pinned version automatically.
+
 1. Clone the repository
 2. Navigate to the project folder
 3. Execute: `npm install`
 4. Execute: `npm run dev`
 
 The application will open automatically at `http://localhost:3000`.
+
+## CI
+
+Every push and pull request to `main` runs a three-stage GitHub Actions pipeline: **Lint & Audit** (ESLint + type-check), **Testing** (full Jest suite), and **Build** (Vite production build). Each stage must pass before the next one starts.
 
 ## Testing
 

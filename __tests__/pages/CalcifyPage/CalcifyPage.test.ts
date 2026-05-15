@@ -96,6 +96,14 @@ describe("CalcifyPage", () => {
       expect(getDisplay()).toBe("0");
     });
 
+    it("should append 0 after a non-zero digit", async () => {
+      renderPage();
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("button", { name: "1" }));
+      await user.click(screen.getByRole("button", { name: "0" }));
+      expect(getDisplay()).toBe("10");
+    });
+
     it("should replace the display after an operation is pending", async () => {
       renderPage();
       const user = userEvent.setup();
@@ -103,6 +111,17 @@ describe("CalcifyPage", () => {
       await user.click(screen.getByRole("button", { name: "Add" }));
       await user.click(screen.getByRole("button", { name: "3" }));
       expect(getDisplay()).toBe("3");
+    });
+
+    it("should replace the display with the first digit typed after pressing equals", async () => {
+      renderPage();
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("button", { name: "5" }));
+      await user.click(screen.getByRole("button", { name: "Add" }));
+      await user.click(screen.getByRole("button", { name: "3" }));
+      await user.click(screen.getByRole("button", { name: "Equals" }));
+      await user.click(screen.getByRole("button", { name: "7" }));
+      expect(getDisplay()).toBe("7");
     });
   });
 
@@ -134,6 +153,18 @@ describe("CalcifyPage", () => {
       await user.click(screen.getByRole("button", { name: "3" }));
       await user.click(screen.getByRole("button", { name: "Add" }));
       expect(getDisplay()).toBe("8");
+    });
+
+    it("should produce the correct result when chaining operations with a final equals", async () => {
+      renderPage();
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("button", { name: "2" }));
+      await user.click(screen.getByRole("button", { name: "Add" }));
+      await user.click(screen.getByRole("button", { name: "3" }));
+      await user.click(screen.getByRole("button", { name: "Add" }));
+      await user.click(screen.getByRole("button", { name: "4" }));
+      await user.click(screen.getByRole("button", { name: "Equals" }));
+      expect(getDisplay()).toBe("9");
     });
   });
 
@@ -184,6 +215,16 @@ describe("CalcifyPage", () => {
       await user.click(screen.getByRole("button", { name: "2" }));
       await user.click(screen.getByRole("button", { name: "Equals" }));
       expect(getDisplay()).toBe("4");
+    });
+
+    it("should show 0 when dividing by zero", async () => {
+      renderPage();
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("button", { name: "5" }));
+      await user.click(screen.getByRole("button", { name: "Divide" }));
+      await user.click(screen.getByRole("button", { name: "0" }));
+      await user.click(screen.getByRole("button", { name: "Equals" }));
+      expect(getDisplay()).toBe("0");
     });
 
     it("should do nothing when equals is pressed again after a result", async () => {
@@ -271,6 +312,13 @@ describe("CalcifyPage", () => {
         await user.click(screen.getByRole("button", { name: "5" }));
         await user.click(screen.getByRole("button", { name: "Decimal point" }));
         expect(getDisplay()).toBe("5.");
+      });
+
+      it("should append a decimal point to the initial zero", async () => {
+        renderPage();
+        const user = userEvent.setup();
+        await user.click(screen.getByRole("button", { name: "Decimal point" }));
+        expect(getDisplay()).toBe("0.");
       });
 
       it("should not add a second decimal point if one already exists", async () => {
