@@ -72,10 +72,6 @@ With the stack described above in place, follow these steps to run Calcify local
 
 The application will open automatically at `http://localhost:3000`.
 
-## CI
-
-Every push and pull request to `main` runs a three-stage GitHub Actions pipeline: **Lint & Audit** (ESLint + type-check), **Testing** (full Jest suite), and **Build** (Vite production build). Each stage must pass before the next one starts.
-
 ## Testing
 
 Once the app is running locally, you can validate behavior with the bundled Jest + Testing Library suite (70% coverage threshold enforced across branches, functions, lines, and statements).
@@ -87,6 +83,52 @@ For coverage report:
 
 ```bash
 npm run test:coverage
+```
+
+## Continuous Integration
+
+The repository ships with a **GitHub Actions** pipeline defined in [`.github/workflows/ci.yml`](.github/workflows/ci.yml). It runs automatically on every `push` and `pull_request` targeting the `main` branch.
+
+### Pipeline overview
+
+```
+                      ┌─── PR or push to main ───┐
+                      ▼                          ▼
+┌──────────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+│   lint-and-audit     │─▶│     testing      │─▶│      build       │
+│   eslint · tsc       │  │   jest (jsdom)   │  │   vite build     │
+└──────────────────────┘  └──────────────────┘  └──────────────────┘
+```
+
+### Validation jobs (run on every PR and push)
+
+1. **`lint-and-audit`** — runs `npm run lint` (ESLint with the project's flat config) followed by `npm run type-check` (TypeScript without emit).
+2. **`testing`** — installs dependencies with `npm ci` and runs the full Jest suite via `npm run test`. Requires `lint-and-audit` to succeed.
+3. **`build`** — smoke test that `npm run build` (Vite production build into `dist/`) compiles cleanly. Requires `testing` to succeed.
+
+All three jobs run on `ubuntu-latest` and use the Node version pinned in [`.nvmrc`](.nvmrc), with the npm cache enabled through `actions/setup-node`.
+
+### Where the build outputs live
+
+| Output                                    | Location                                                       |
+| ----------------------------------------- | -------------------------------------------------------------- |
+| Validation logs (lint, type-check, tests) | **Actions** tab on GitHub                                      |
+| Production bundle (`dist/`)               | Ephemeral, inside the CI runner — not published as an artifact |
+
+> **Note:** the pipeline does not currently produce GitHub Releases or upload the bundled site. Deployment, if any, must be wired separately (e.g. a static-hosting provider that builds from `main`).
+
+### Running the same checks locally
+
+```bash
+# lint-and-audit
+npm run lint
+npm run type-check
+
+# testing
+npm run test
+
+# build
+npm run build
 ```
 
 ## Security Audit
